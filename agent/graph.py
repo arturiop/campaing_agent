@@ -65,7 +65,12 @@ class CampaignAgent:
 
     async def _ingest_brand_context(self, state: GenerateState) -> GenerateState:
         request = state["request"]
-        documents = await self.airbyte.read_brand_context(request.connection_id)
+        if request.source == "ghost":
+            ghost_documents = await self.ghost.read_brand_context()
+            notion_documents = await self.airbyte.read_notion_brand_context()
+            documents = [*ghost_documents, *notion_documents]
+        else:
+            documents = await self.airbyte.read_brand_context(request.connection_id)
         return {"documents": documents}
 
     async def _generate_storyboard_brief(self, state: GenerateState) -> GenerateState:

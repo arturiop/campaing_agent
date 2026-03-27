@@ -12,7 +12,13 @@ class Settings(BaseSettings):
 
     airbyte_api_url: str = Field(default="https://api.airbyte.com/v1", alias="AIRBYTE_API_URL")
     airbyte_api_key: str = Field(default="", alias="AIRBYTE_API_KEY")
+    airbyte_client_id: str = Field(default="", alias="AIRBYTE_CLIENT_ID")
+    airbyte_client_secret: str = Field(default="", alias="AIRBYTE_CLIENT_SECRET")
+    airbyte_secret: str = Field(default="", alias="AIRBYTE_SECRET")
+    airbyte_organization_id: str = Field(default="", alias="AIRBYTE_ORGANIZATION_ID")
     airbyte_connection_id: str = Field(default="", alias="AIRBYTE_CONNECTION_ID")
+    airbyte_notion_connector_id: str = Field(default="", alias="AIRBYTE_NOTION_CONNECTOR_ID")
+    airbyte_notion_page_id: str = Field(default="", alias="AIRBYTE_NOTION_PAGE_ID")
     airbyte_synced_brand_json_path: str = Field(default="", alias="AIRBYTE_SYNCED_BRAND_JSON_PATH")
 
     ghost_api_url: str = Field(default="", alias="GHOST_API_URL")

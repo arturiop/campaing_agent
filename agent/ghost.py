@@ -5,6 +5,7 @@ from textwrap import dedent
 import httpx
 import jwt
 
+from agent.airbyte import BrandDocument
 from schemas import Brief, PublishResponse, Scene
 from settings import Settings
 
@@ -17,7 +18,7 @@ class GhostClient:
         if not (self.settings.ghost_api_url and self.settings.ghost_admin_api_key):
             return []
 
-        response = await self._request("GET", "/posts/?limit=5&formats=html,plaintext")
+        response = await self._request("GET", "/posts/?limit=10&formats=html,plaintext&include=tags,authors")
         posts = response.get("posts", [])
         output: list[dict[str, str]] = []
         for post in posts:
@@ -29,9 +30,31 @@ class GhostClient:
                     "title": str(post.get("title", "")),
                     "url": str(post.get("url", "")),
                     "plaintext": str(post.get("plaintext", "")),
+                    "feature_image": str(post.get("feature_image", "") or ""),
                 }
             )
         return output
+
+    async def read_brand_context(self) -> list[BrandDocument]:
+        posts = await self.read_posts()
+        documents: list[BrandDocument] = []
+
+        for post in posts:
+            title = post.get("title", "").strip()
+            body = post.get("plaintext", "").strip()
+            if not title or not body:
+                continue
+
+            documents.append(
+                BrandDocument(
+                    title=title,
+                    body=body,
+                    source_url=post.get("url") or None,
+                    image_urls=[post["feature_image"]] if post.get("feature_image") else [],
+                )
+            )
+
+        return documents
 
     async def publish_brief(self, project_uuid: str, brief: Brief, scenes: list[Scene], ghost_site_url: str) -> PublishResponse:
         post_body = self._build_post_html(project_uuid, brief, scenes)

@@ -26,9 +26,14 @@ class BriefGenerator:
 
     async def _generate_with_openai(self, project_uuid: str, documents: list[BrandDocument]) -> GenerateBriefResponse | None:
         context_blocks = []
+        reference_images: list[str] = []
         for index, document in enumerate(documents[:8], start=1):
+            image_lines = ""
+            if document.image_urls:
+                image_lines = "\nReference images:\n" + "\n".join(document.image_urls[:3])
+                reference_images.extend(document.image_urls[:3])
             context_blocks.append(
-                f"[Document {index}]\nTitle: {document.title}\nURL: {document.source_url or 'n/a'}\nContent:\n{document.body[:6000]}"
+                f"[Document {index}]\nTitle: {document.title}\nURL: {document.source_url or 'n/a'}{image_lines}\nContent:\n{document.body[:6000]}"
             )
 
         prompt = dedent(
@@ -86,6 +91,9 @@ class BriefGenerator:
             text = "\n".join(lines[1:-1]).strip() if len(lines) >= 3 else text
 
         payload = json.loads(text)
+        payload.setdefault("reference_images", [])
+        existing_images = payload.get("reference_images") or []
+        payload["reference_images"] = list(dict.fromkeys([*existing_images, *reference_images]))
         return GenerateBriefResponse.model_validate(payload)
 
     def _fallback_response(self, documents: list[BrandDocument]) -> GenerateBriefResponse:
@@ -138,4 +146,13 @@ class BriefGenerator:
             ),
         ]
 
-        return GenerateBriefResponse(brief=brief, scenes=scenes)
+        reference_images: list[str] = []
+        for document in documents:
+            if document.image_urls:
+                reference_images.extend(document.image_urls)
+
+        return GenerateBriefResponse(
+            brief=brief,
+            scenes=scenes,
+            reference_images=list(dict.fromkeys(reference_images)),
+        )

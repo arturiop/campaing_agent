@@ -35,6 +35,7 @@ class GenerateBriefRequest(BaseModel):
 class GenerateBriefResponse(BaseModel):
     brief: Brief
     scenes: list[Scene]
+    reference_images: list[HttpUrl] = Field(default_factory=list)
 
 
 class PublishRequest(BaseModel):

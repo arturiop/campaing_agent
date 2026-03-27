@@ -1,0 +1,5 @@
+connector:
+  connector_id: be8b402d-36ce-4678-8ffa-c24f20f6e95c
+credentials:
+  airbyte_client_id: ${env.AIRBYTE_CLIENT_ID}
+  airbyte_client_secret: ${env.AIRBYTE_CLIENT_SECRET}
